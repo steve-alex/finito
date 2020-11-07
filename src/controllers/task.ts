@@ -1,7 +1,8 @@
 import express = require('express');
 import { Task } from '../models/task';
+import Controller from '../interface/Controller.interface';
 
-class TaskController{
+class TaskController implements Controller {
   public path = '/tasks';
   public router = express.Router()
 
@@ -16,53 +17,57 @@ class TaskController{
     this.router.delete(`${this.path}/:id`, this.deleteTask)
   }
 
-  createTask = (request: express.Request, response: express.Response) => {
+  createTask = async (request: express.Request, response: express.Response) => {
     const task = new Task(request.body);
-    console.log('task', task);
-    task.save()
-      .then(() => {
-        // TODO - update all the statuses to the right ones!
-        response.status(200).send(task)
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      })
+
+    try {
+      await task.save()
+      response.status(201).send(task);
+    } catch (e) {
+      response.status(400).send(e);
+    }
   }
 
-  getTaskById = (request: express.Request, response: express.Response) => {
+  getTaskById = async (request: express.Request, response: express.Response) => {
     const _id = request.params.id;
 
-    Task.findById(_id)
-      .then((task) => {
-        response.send(task);
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      })
+    try {
+      const task = await Task.findById(_id);
+      response.status(200).send(task);
+    } catch (e) {
+      response.status(500).send(e);
+    }
   }
 
-  updateTask = (request: express.Request, response: express.Response) => {
+  updateTask = async (request: express.Request, response: express.Response) => {
     const _id = request.params.id;
+    const updates = Object.keys(request.body);
+    const allowedUpdates = ['header', 'description', 'date', 'completed'];
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+    // TODO - move all of this into a new place? Some kind of helper folder?
 
-    Task.findByIdAndUpdate(_id, request.body, { new: true })
-      .then((task) => {
-        response.send(task)
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      }) 
+    if (!isValidOperation){
+      // TODO - Does this even need to be here? What is the chance that the frontend will send an invalid update?
+      return response.status(400).send({ error: 'Invalid Updates'})
+    }
+
+    try {
+      const task = await Task.findByIdAndUpdate(_id, request.body, { new: true });
+      response.status(200).send(task);
+    } catch(e) {
+      response.status(500).send(e);
+    }
   }
 
-  deleteTask = (request: express.Request, response: express.Response) => {
+  deleteTask = async (request: express.Request, response: express.Response) => {
     const _id = request.params.id;
     
-    Task.findByIdAndDelete(_id)
-      .then((resp) => {
-        response.sendStatus(200);
-      })
-      .catch((err) => {
-        response.sendStatus(404);
-      })
+    try {
+      await Task.findByIdAndDelete(_id)
+      response.sendStatus(200);
+    } catch (e) {
+      response.status(500).send(e);
+    }
   }
 }
 

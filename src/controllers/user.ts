@@ -1,7 +1,8 @@
 import express = require('express');
 import { User } from '../models/user';
+import Controller from '../interface/Controller.interface';
 
-class UserController {
+class UserController implements Controller {
   public path = '/users';
   public router = express.Router();
 
@@ -24,41 +25,55 @@ class UserController {
   logoutUser = (request: express.Request, response: express.Response) => {
   }
 
-  createUser = (request: express.Request, response: express.Response) => {
-    const user = new User(request.body);
-
-    user.save()
-      .then(() => {
-        // TODO - update all the statuses to the right ones!
-        response.status(200).send(user)
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      })
+  createUser = async (request: express.Request, response: express.Response) => {
+    try {
+      const user = new User(request.body);
+      await user.save()
+      response.status(201).send(user);
+    } catch (e) {
+      response.status(400).send(e);
+    }
   }
 
-  getUserById = (request: express.Request, response: express.Response) => {
+  getUserById = async (request: express.Request, response: express.Response) => {
     const _id = request.params.id;
 
-    User.findById(_id)
-      .then((user) => {
-        response.send(user);
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      })
+    try {
+      const user = await User.findById(_id)
+
+      if (!user){
+        response.sendStatus(404);
+      }
+
+      response.status(200).send(user);
+    } catch (e) {
+      response.status(400).send(e);
+    }
   }
 
-  updateUser = (request: express.Request, response: express.Response) => {
+  updateUser = async (request: express.Request, response: express.Response) => {
     const _id = request.params.id;
+    const updates = Object.keys(request.body);
+    const allowedUpdates = ['name', 'email', 'password', 'age'];
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+    // TODO - move all of this into a new place? Some kind of helper folder?
 
-    User.findByIdAndUpdate(_id, request.body, { new: true })
-      .then((user) => {
-        response.send(user)
-      })
-      .catch((err) => {
-        response.status(400).send(err)
-      }) 
+    if (!isValidOperation){
+      // TODO - Does this even need to be here? What is the chance that the frontend will send an invalid update?
+      return response.status(400).send({ error: 'Invalid Updates'})
+    }
+    
+    try {
+      const user = await User.findByIdAndUpdate(_id, request.body, {new: true, runValidators: true, useFindAndModify: false});
+      //TODO - move these additional settings to another file
+      if (!user){
+        return response.sendStatus(404);
+      }
+
+      response.status(404).send(user);
+    } catch(e) {
+      response.status(400).send(e);
+    }
   }
 
   deleteUser = (request: express.Request, response: express.Response) => {
