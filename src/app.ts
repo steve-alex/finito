@@ -1,5 +1,6 @@
-import express from 'express';
+import express  from 'express';
 import mongoose from 'mongoose';
+import errorMiddleware from './middleware/error';
 import { loggerMiddleWare } from "./middleware/logger";
 const userController = require('./controllers/user');
 const taskController = require('./controllers/task');
@@ -35,6 +36,7 @@ class App {
   private initializeMiddlewares(){
     this.app.use(express.json());
     this.app.use(loggerMiddleWare);
+    this.app.use(errorMiddleware);
   }
 
   private initializeControllers(){

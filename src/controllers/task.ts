@@ -1,10 +1,12 @@
-import express = require('express');
-import { Task } from '../models/task';
+import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
+import { Task } from '../models/task';
+import HttpException from '../exceptions/error';
+import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
 
 class TaskController implements Controller {
   public path = '/tasks';
-  public router = express.Router()
+  public router = Router();
 
   constructor(){
     this.initializeRoutes();
@@ -12,34 +14,39 @@ class TaskController implements Controller {
 
   public initializeRoutes(){
     this.router.post(this.path, this.createTask);
-    this.router.get(`${this.path}/:id`, this.getTaskById)
-    this.router.patch(`${this.path}/:id`, this.updateTask)
-    this.router.delete(`${this.path}/:id`, this.deleteTask)
+    this.router.get(`${this.path}/:id`, this.getTaskById);
+    this.router.patch(`${this.path}/:id`, this.updateTask);
+    this.router.delete(`${this.path}/:id`, this.deleteTask);
   }
 
-  createTask = async (request: express.Request, response: express.Response) => {
+  createTask = async (request: Request, response: Response, next: NextFunction) => {
     const task = new Task(request.body);
 
     try {
-      await task.save()
+      await task.save();
       response.status(201).send(task);
     } catch (e) {
-      response.status(400).send(e);
+      next(new HttpException(400, 'Unable to create task'));
     }
   }
 
-  getTaskById = async (request: express.Request, response: express.Response) => {
+  getTaskById = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
 
     try {
       const task = await Task.findById(_id);
+
+      if (!task){
+        return next(new ResourceNotFoundException('Task', _id));
+      }
+
       response.status(200).send(task);
     } catch (e) {
-      response.status(500).send(e);
+      next(new HttpException(400, 'Unable to get task'))
     }
   }
 
-  updateTask = async (request: express.Request, response: express.Response) => {
+  updateTask = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
     const updates = Object.keys(request.body);
     const allowedUpdates = ['header', 'description', 'date', 'completed'];
@@ -47,26 +54,36 @@ class TaskController implements Controller {
     // TODO - move all of this into a new place? Some kind of helper folder?
 
     if (!isValidOperation){
-      // TODO - Does this even need to be here? What is the chance that the frontend will send an invalid update?
-      return response.status(400).send({ error: 'Invalid Updates'})
+      return next(new HttpException(400, "Invalid updates"));
     }
+    //TODO - Should I be type checking the request.body with an interface?
 
     try {
       const task = await Task.findByIdAndUpdate(_id, request.body, { new: true });
+
+      if (!task){
+        return next(new ResourceNotFoundException('Task', _id));
+      }
+
       response.status(200).send(task);
     } catch(e) {
-      response.status(500).send(e);
+      next(new HttpException(400, "Unable to update task"));
     }
   }
 
-  deleteTask = async (request: express.Request, response: express.Response) => {
+  deleteTask = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
     
     try {
-      await Task.findByIdAndDelete(_id)
+      const task = await Task.findByIdAndDelete(_id)
+
+      if (!task){
+        return next(new ResourceNotFoundException('Task', _id));
+      }
+      
       response.sendStatus(200);
     } catch (e) {
-      response.status(500).send(e);
+      next(new HttpException(400, "Unable to delete task"));
     }
   }
 }

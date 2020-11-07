@@ -1,6 +1,6 @@
-import express = require("express");
+import { Request, Response, NextFunction } from "express";
 
-export function loggerMiddleWare(request: express.Request, response: express.Response, next){
+export function loggerMiddleWare(request: Request, response: Response, next: NextFunction){
   console.log(`${request.method} ${request.path}`)
   next();
 }

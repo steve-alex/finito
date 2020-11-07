@@ -9,7 +9,7 @@ export const Task = mongoose.model('Task', {
     type: String,
     trim: true
   },
-  Date: {
+  date: {
     type: Date,
   },
   completed: {

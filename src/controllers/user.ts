@@ -1,57 +1,59 @@
-import express = require('express');
+import { Router, Request, Response, NextFunction } from 'express';
 import { User } from '../models/user';
 import Controller from '../interface/Controller.interface';
+import HttpException from '../exceptions/error';
+import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
 
 class UserController implements Controller {
   public path = '/users';
-  public router = express.Router();
+  public router = Router();
 
   constructor(){
     this.initializeRoutes();
   }
 
   public initializeRoutes(){
-    this.router.post(`${this.path}/login`, this.loginUser)
-    this.router.post(`${this.path}/logout`, this.logoutUser)
+    this.router.post(`${this.path}/login`, this.loginUser);
+    this.router.post(`${this.path}/logout`, this.logoutUser);
     this.router.post(this.path, this.createUser);
-    this.router.get(`${this.path}/:id`, this.getUserById)
-    this.router.patch(`${this.path}/:id`, this.updateUser)
-    this.router.delete(`${this.path}/:id`, this.deleteUser)
+    this.router.get(`${this.path}/:id`, this.getUserById);
+    this.router.patch(`${this.path}/:id`, this.updateUser);
+    this.router.delete(`${this.path}/:id`, this.deleteUser);
   }
 
-  loginUser = (request: express.Request, response: express.Response) => {
+  loginUser = (request: Request, response: Response) => {
   }
 
-  logoutUser = (request: express.Request, response: express.Response) => {
+  logoutUser = (request: Request, response: Response) => {
   }
 
-  createUser = async (request: express.Request, response: express.Response) => {
+  createUser = async (request: Request, response: Response, next: NextFunction) => {
     try {
       const user = new User(request.body);
-      await user.save()
+      await user.save();
       response.status(201).send(user);
-    } catch (e) {
-      response.status(400).send(e);
+    } catch (error) {
+      next(new HttpException(400, "Unable to create user"));
     }
   }
 
-  getUserById = async (request: express.Request, response: express.Response) => {
+  getUserById = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
 
     try {
-      const user = await User.findById(_id)
+      const user = await User.findById(_id);
 
       if (!user){
-        response.sendStatus(404);
+        return next(new ResourceNotFoundException('User', _id));
       }
 
       response.status(200).send(user);
     } catch (e) {
-      response.status(400).send(e);
+      next(new HttpException(400, "Unable to get user"));
     }
   }
 
-  updateUser = async (request: express.Request, response: express.Response) => {
+  updateUser = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
     const updates = Object.keys(request.body);
     const allowedUpdates = ['name', 'email', 'password', 'age'];
@@ -59,33 +61,31 @@ class UserController implements Controller {
     // TODO - move all of this into a new place? Some kind of helper folder?
 
     if (!isValidOperation){
-      // TODO - Does this even need to be here? What is the chance that the frontend will send an invalid update?
-      return response.status(400).send({ error: 'Invalid Updates'})
+      next(new HttpException(400, "Invalid Updates"));
     }
     
     try {
       const user = await User.findByIdAndUpdate(_id, request.body, {new: true, runValidators: true, useFindAndModify: false});
       //TODO - move these additional settings to another file
       if (!user){
-        return response.sendStatus(404);
+        return next(new ResourceNotFoundException('User', _id));
       }
 
       response.status(404).send(user);
     } catch(e) {
-      response.status(400).send(e);
+      next(new HttpException(400, "Unable to update user"));
     }
   }
 
-  deleteUser = (request: express.Request, response: express.Response) => {
+  deleteUser = async (request: Request, response: Response, next: NextFunction) => {
     const _id = request.params.id;
     
-    User.findByIdAndDelete(_id)
-      .then((resp) => {
-        response.sendStatus(200);
-      })
-      .catch((err) => {
-        response.sendStatus(404);
-      })
+    try {
+      await User.findByIdAndDelete(_id)
+      response.sendStatus(200);
+    } catch (e) {
+      next(new HttpException(400, "Unable to delete user"));
+    }
   }
 }
 
