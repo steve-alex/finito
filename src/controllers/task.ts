@@ -60,9 +60,7 @@ class TaskController implements Controller {
 
     try {
       const task = await Task.findById(_id);
-      console.log('task', task);
       updates.forEach((update) => task[update] = request.body[update]);
-      console.log('task', task);
       await task.save();
 
       if (!task){

@@ -71,8 +71,6 @@ class UserController implements Controller {
     }
     
     try {
-      // const user = await User.findByIdAndUpdate(_id, request.body, {new: true, runValidators: true, useFindAndModify: false});
-      
       const user = await User.findById(_id);
       updates.forEach((update) => user[update] = request.body[update]);
       await user.save();
