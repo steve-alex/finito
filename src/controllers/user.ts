@@ -21,10 +21,16 @@ class UserController implements Controller {
     this.router.delete(`${this.path}/:id`, this.deleteUser);
   }
 
-  loginUser = (request: Request, response: Response) => {
+  loginUser = async (request: Request, response: Response) => {
+    try {
+      const user = await User.findByCredentials(request.body.email, request.body.password);
+      response.status(200).send(user);
+    } catch (e) {
+      response.status(400).send();
+    }
   }
 
-  logoutUser = (request: Request, response: Response) => {
+  logoutUser = async(request: Request, response: Response) => {
   }
 
   createUser = async (request: Request, response: Response, next: NextFunction) => {
@@ -65,7 +71,12 @@ class UserController implements Controller {
     }
     
     try {
-      const user = await User.findByIdAndUpdate(_id, request.body, {new: true, runValidators: true, useFindAndModify: false});
+      // const user = await User.findByIdAndUpdate(_id, request.body, {new: true, runValidators: true, useFindAndModify: false});
+      
+      const user = await User.findById(_id);
+      updates.forEach((update) => user[update] = request.body[update]);
+      await user.save();
+
       //TODO - move these additional settings to another file
       if (!user){
         return next(new ResourceNotFoundException('User', _id));

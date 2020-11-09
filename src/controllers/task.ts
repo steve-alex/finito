@@ -59,7 +59,11 @@ class TaskController implements Controller {
     //TODO - Should I be type checking the request.body with an interface?
 
     try {
-      const task = await Task.findByIdAndUpdate(_id, request.body, { new: true });
+      const task = await Task.findById(_id);
+      console.log('task', task);
+      updates.forEach((update) => task[update] = request.body[update]);
+      console.log('task', task);
+      await task.save();
 
       if (!task){
         return next(new ResourceNotFoundException('Task', _id));
