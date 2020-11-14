@@ -47,7 +47,6 @@ class UserController implements Controller {
       const [user, token] = await this.userService.createUser(request.body);
       response.status(201).send({ user, token });
     } catch (error) {
-      console.log('error', error);
       next(new HttpException(400, "Unable to create user"));
     }
   }
