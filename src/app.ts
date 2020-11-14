@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 import DBConnectionSettings from './interface/DbConnectionSettings.interface';
 import errorMiddleware from './middleware/error';
 import { loggerMiddleWare } from "./middleware/logger";
-const userController = require('./controllers/user');
-const taskController = require('./controllers/task');
+const userController = require('./api/user');
+const taskController = require('./api/task');
 
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
