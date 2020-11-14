@@ -3,12 +3,13 @@ import User from '../models/user';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException';
 import IncorrectCredentialsException from '../exceptions/IncorrectCredentialsException';
+const UserService = require('../services/user.service');
 
 class UserController implements Controller {
   public path = '/users';
   public router = Router();
+  public userService = new UserService();
 
   constructor(){
     this.initializeRoutes();
@@ -25,25 +26,16 @@ class UserController implements Controller {
 
   loginUser = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const user = await User.findByCredentials(request.body.email, request.body.password);
-      const token = await user.generateAuthToken();
+      const [user, token] = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
       response.status(200).send({ user, token });
-    } catch (e) {
+    } catch (error) {
       next(new IncorrectCredentialsException());
-      response.status(400).send(e);
-
-      // TODO make this into your own error
     }
   }
 
   logoutUser = async(request: any, response: Response, next: NextFunction) => {
     try {
-      request.user.tokens = request.user.tokens.filter(token => {
-        return token.token !== request.token;
-      })
-
-      // //TODO - move all this!
-      await request.user.save()
+      await this.userService.refreshJwtTokens(request);
       response.sendStatus(200);
     } catch (e) {
       next(new HttpException(500, "Unable to logout user"))
@@ -52,12 +44,10 @@ class UserController implements Controller {
 
   createUser = async (request: Request, response, next: NextFunction) => {
     try {
-      const user = new User(request.body);
-      await user.save(user);
-      const token = await user.generateAuthToken();
-      //TODO - Move all of this to services
+      const [user, token] = await this.userService.createUser(request.body);
       response.status(201).send({ user, token });
     } catch (error) {
+      console.log('error', error);
       next(new HttpException(400, "Unable to create user"));
     }
   }
@@ -71,27 +61,8 @@ class UserController implements Controller {
   }
 
   updateUser = async (request, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    const updates = Object.keys(request.body);
-    const allowedUpdates = ['name', 'email', 'password', 'age'];
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-    // TODO - Too much logic, move to services
-
-    if (!isValidOperation){
-      next(new HttpException(400, "Invalid Updates"));
-    }
-    
     try {
-      const user = request.user;
-      updates.forEach((update) => request.user[update] = request.body[update]);
-      // TODO - Again too much logic, move to services
-      await user.save();
-
-      //TODO - move these additional settings to another file
-      if (!user){
-        return next(new ResourceNotFoundException('User', _id));
-      }
-
+      const user = await this.userService.updateUser(request.body, request.user);
       response.status(404).send(user);
     } catch(e) {
       next(new HttpException(400, "Unable to update user"));

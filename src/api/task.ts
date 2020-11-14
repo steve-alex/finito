@@ -1,88 +1,65 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
-import { Task } from '../models/task';
+import Task from '../models/task';
+import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
+const TaskService = require('../services/task.service');
 
 class TaskController implements Controller {
   public path = '/tasks';
   public router = Router();
+  public taskService = new TaskService();
 
   constructor(){
     this.initializeRoutes();
   }
 
   public initializeRoutes(){
-    this.router.post(this.path, this.createTask);
-    this.router.get(`${this.path}/:id`, this.getTaskById);
-    this.router.patch(`${this.path}/:id`, this.updateTask);
-    this.router.delete(`${this.path}/:id`, this.deleteTask);
+    this.router.post(this.path, auth, this.createTask);
+    this.router.get(`${this.path}/:id`, auth, this.getTaskById);
+    this.router.patch(`${this.path}/:id`, auth, this.updateTask);
+    this.router.delete(`${this.path}/:id`, auth, this.deleteTask);
   }
 
-  createTask = async (request: Request, response: Response, next: NextFunction) => {
-    const task = new Task(request.body);
-
+  createTask = async (request: any, response: Response, next: NextFunction) => {
     try {
-      await task.save();
+      const updatedTask = request.body;
+      const userId = request.user._id;
+      const task = await this.taskService.createTask(updatedTask, userId);
       response.status(201).send(task);
     } catch (e) {
       next(new HttpException(400, 'Unable to create task'));
     }
   }
 
-  getTaskById = async (request: Request, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-
+  getTaskById = async (request: any, response: Response, next: NextFunction) => {
     try {
-      const task = await Task.findById(_id);
-
-      if (!task){
-        return next(new ResourceNotFoundException('Task', _id));
-      }
-
+      const taskId = request.params.id;
+      const userId = request.user._id;
+      const task = await this.taskService.getTaskById(taskId, userId)
       response.status(200).send(task);
     } catch (e) {
       next(new HttpException(400, 'Unable to get task'))
     }
   }
 
-  updateTask = async (request: Request, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    const updates = Object.keys(request.body);
-    const allowedUpdates = ['header', 'description', 'date', 'completed'];
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-    // TODO - move all of this into a new place? Some kind of helper folder?
-
-    if (!isValidOperation){
-      return next(new HttpException(400, "Invalid updates"));
-    }
-    //TODO - Should I be type checking the request.body with an interface?
-
+  updateTask = async (request: any, response: Response, next: NextFunction) => {
     try {
-      const task = await Task.findById(_id);
-      updates.forEach((update) => task[update] = request.body[update]);
-      await task.save();
-
-      if (!task){
-        return next(new ResourceNotFoundException('Task', _id));
-      }
-
+      const updatedTask = request.body;  
+      const taskId = request.params.id;
+      const userId = request.user._id;
+      const task = await this.taskService.updateTask(updatedTask, taskId, userId);
       response.status(200).send(task);
     } catch(e) {
       next(new HttpException(400, "Unable to update task"));
     }
   }
 
-  deleteTask = async (request: Request, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    
+  deleteTask = async (request: any, response: Response, next: NextFunction) => {
     try {
-      const task = await Task.findByIdAndDelete(_id)
-
-      if (!task){
-        return next(new ResourceNotFoundException('Task', _id));
-      }
-      
+      const taskId = request.params.id;
+      const userId = request.user._id;
+      await this.taskService.deleteTask(taskId, userId);
       response.sendStatus(200);
     } catch (e) {
       next(new HttpException(400, "Unable to delete task"));

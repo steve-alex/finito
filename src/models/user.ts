@@ -1,7 +1,9 @@
+import { NextFunction } from "connect";
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Task = require("../models/task");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -46,6 +48,24 @@ const userSchema = new mongoose.Schema({
   }]
 })
 
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'owner'
+})
+
+userSchema.virtual('projects', {
+  ref: 'Area',
+  localField: '_id',
+  foreignField: 'owner'
+})
+
+userSchema.virtual('tasks', {
+  ref: 'Project',
+  localField: '_id',
+  foreignField: 'owner'
+})
+
 userSchema.methods.toJSON = function() {
   const user = this;
   const userObject = user.toObject();
@@ -56,44 +76,19 @@ userSchema.methods.toJSON = function() {
   return userObject;
 }
 
-userSchema.methods.generateAuthToken = async function(){
-  const user = this;
-
-  console.log('user', user);
-  
-  const token = jwt.sign({ _id: user._id.toString() }, 'temp')
-
-  user.tokens = user.tokens.concat({ token })
-  await user.save();
-  
-  // TODO - Create a new file
-  return token;
-}
-
-userSchema.statics.findByCredentials = async (email: string, password: string) => {
-  const user = await User.findOne({ email });
-
-  if (!user){
-    throw new Error('User not found');
-    //TODO - Could this be thrown inside a next()?
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch){
-    throw new Error('Unable to login');
-  }
-
-  return user;
-}
-
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function(next: NextFunction) {
   const user = this;
 
   if (user.isModified('password')){
     user.password = await bcrypt.hash(user.password, 8);
   }
 
+  next();
+});
+
+userSchema.pre('remove', async function(next: NextFunction) {
+  const user = this;
+  Task.deleteMany({ owner: user._id });
   next();
 });
 
