@@ -1,21 +1,16 @@
 import express  from 'express';
 import mongoose from 'mongoose';
+import DBConnectionSettings from './interface/DbConnectionSettings.interface';
 import errorMiddleware from './middleware/error';
 import { loggerMiddleWare } from "./middleware/logger";
 const userController = require('./controllers/user');
 const taskController = require('./controllers/task');
 
-interface DBConnectionSettings {
-  useUnifiedTopology: boolean,
-  useNewUrlParser: boolean
-}
-// TODO - move this
-
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
   // TODO - put this in process.env file
   private dbConnectionSettings: DBConnectionSettings = { useUnifiedTopology: true, useNewUrlParser: true };
-  // TODO - put this in its own settings/config file 
+  // TODO - put this in its own settings folder
   public app: express.Application;
   public port: number;
 

@@ -64,7 +64,7 @@ class UserController implements Controller {
     const updates = Object.keys(request.body);
     const allowedUpdates = ['name', 'email', 'password', 'age'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-    // TODO - move all of this into a new place? Some kind of helper folder?
+    // TODO - Too much logic, move to services
 
     if (!isValidOperation){
       next(new HttpException(400, "Invalid Updates"));
@@ -73,6 +73,7 @@ class UserController implements Controller {
     try {
       const user = await User.findById(_id);
       updates.forEach((update) => user[update] = request.body[update]);
+      // TODO - Again too much logic, move to services
       await user.save();
 
       //TODO - move these additional settings to another file

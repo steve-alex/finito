@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -53,8 +52,6 @@ userSchema.statics.findByCredentials = async (email: string, password: string) =
   if (!isMatch){
     throw new Error('Unable to login');
   }
-
-
 }
 
 userSchema.pre('save', async function(next) {

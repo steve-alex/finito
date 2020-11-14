@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-export const Task = mongoose.model('Task', {
+const TaskSchema = new mongoose.Schema({
   header: {
     type: String,
     trim: true
@@ -17,6 +17,8 @@ export const Task = mongoose.model('Task', {
     default: false
   }
 })
+
+export const Task = mongoose.model('Task', TaskSchema);
 
 exports = {
   Task
