@@ -35,7 +35,7 @@ class UserController implements Controller {
 
   logoutUser = async(request: any, response: Response, next: NextFunction) => {
     try {
-      await this.userService.refreshJwtTokens(request);
+      await this.userService.refreshJwtTokens(request.user, request.token);
       response.sendStatus(200);
     } catch (e) {
       next(new HttpException(500, "Unable to logout user"))

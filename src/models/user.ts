@@ -2,7 +2,6 @@ import { NextFunction } from "connect";
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const Task = require("../models/task");
 
 const userSchema = new mongoose.Schema({
@@ -46,6 +45,8 @@ const userSchema = new mongoose.Schema({
       required: true
     }
   }]
+}, {
+  timestamps: true
 })
 
 userSchema.virtual('tasks', {
@@ -54,13 +55,13 @@ userSchema.virtual('tasks', {
   foreignField: 'owner'
 })
 
-userSchema.virtual('projects', {
+userSchema.virtual('areas', {
   ref: 'Area',
   localField: '_id',
   foreignField: 'owner'
 })
 
-userSchema.virtual('tasks', {
+userSchema.virtual('projects', {
   ref: 'Project',
   localField: '_id',
   foreignField: 'owner'
@@ -92,6 +93,6 @@ userSchema.pre('remove', async function(next: NextFunction) {
   next();
 });
 
-const User = mongoose.model('User', userSchema); 
+const User = mongoose.model('User', userSchema, 'users'); 
 
 export default User;

@@ -60,13 +60,13 @@ class UserService {
     return token;
   }
 
-  public refreshJwtTokens = async (request) => {
+  public refreshJwtTokens = async (user:any, currentSeessionToken: any) => {
     //TODO - This function needs a better name
-    request.user.tokens = request.user.tokens.filter(token => {
-      return token.token !== request.token;
+    user.tokens = user.tokens.filter(token => {
+      return token.token !== currentSeessionToken;
     })
 
-    request.user.save()
+    user.save()
   }
 }
 

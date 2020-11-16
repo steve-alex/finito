@@ -5,6 +5,8 @@ import errorMiddleware from './middleware/error';
 import { loggerMiddleWare } from "./middleware/logger";
 const userController = require('./api/user');
 const taskController = require('./api/task');
+const projectController = require('./api/project');
+const areaController = require('./api/area');
 
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
@@ -37,8 +39,8 @@ class App {
   private initializeControllers(){
     this.app.use(new userController().router);
     this.app.use(new taskController().router);
-    // this.app.use(projectRouter);
-    // this.app.use(areaRouter);
+    this.app.use(new areaController().router);
+    this.app.use(new projectController().router);
   }
 
   public listen(){
