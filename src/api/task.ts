@@ -17,6 +17,7 @@ class TaskController implements Controller {
   public initializeRoutes(){
     this.router.post(this.path, auth, this.createTask);
     this.router.get(`${this.path}/:id`, auth, this.getTaskById);
+    this.router.get(`${this.path}`, auth, this.getTasks);
     this.router.patch(`${this.path}/:id`, auth, this.updateTask);
     this.router.delete(`${this.path}/:id`, auth, this.deleteTask);
   }
@@ -40,6 +41,15 @@ class TaskController implements Controller {
       response.status(200).send(task);
     } catch (e) {
       next(new HttpException(400, 'Unable to get task'))
+    }
+  }
+
+  getTasks = async (request: any, response: Response, next: NextFunction) => {
+    try {
+      const tasks = await this.taskService.getTasks(request.user, request.query)
+      response.status(200).send(tasks);
+    } catch (e) {
+      next(new HttpException(400, 'Unable to get tasks'))
     }
   }
 

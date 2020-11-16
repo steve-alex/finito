@@ -1,6 +1,5 @@
 import User from '../models/user';
 import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException';
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -10,14 +9,14 @@ class UserService {
   public authenticateUserCredentials = async (email: string, password: string) => {
     const user = await this.findByCredentials(email, password);
     const token = await this.generateAuthToken(user);
-    return [user, token]
+    return { user, token }
   }
 
   public createUser = async (userDetails: any) => {
     const user = new User(userDetails);
     await user.save();
     const token = await this.generateAuthToken(user);
-    return [user, token]
+    return { user, token }
   }
 
   public updateUser = async (updatedUser: any, currentUser: any) => { 
@@ -31,6 +30,7 @@ class UserService {
 
     updates.forEach((update) => currentUser[update] = updatedUser[update]);
     await currentUser.save();
+    return currentUser;
   }
 
   private findByCredentials = async (email: string, password: string) => {
@@ -60,10 +60,10 @@ class UserService {
     return token;
   }
 
-  public refreshJwtTokens = async (user:any, currentSeessionToken: any) => {
+  public refreshTokenAndLogout = async (user:any, currentSessionToken: any) => {
     //TODO - This function needs a better name
     user.tokens = user.tokens.filter(token => {
-      return token.token !== currentSeessionToken;
+      return token.token !== currentSessionToken;
     })
 
     user.save()

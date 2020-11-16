@@ -24,6 +24,18 @@ class TaskService {
     return task;
   }
 
+  public getTasks = async (user: any, query: any) => {
+    const match = this.getMatchObject(query)
+    const options = this.getOptionsObject(query)
+    await user.populate('tasks').execPopulate({
+      path: 'tasks',
+      match,
+      options
+    })
+    const tasks = user.tasks;
+    return tasks;
+  }
+
   public updateTask = async (updatedTask: any, taskId, userId) => {
     const updates = Object.keys(updatedTask);
     const allowedUpdates = ['header', 'description', 'date', 'completed'];
@@ -56,6 +68,26 @@ class TaskService {
 
   private findByCredentials = async (email: string, password: string) => {
 
+  }
+
+  private getMatchObject = (query: any) => {
+    const match = {};
+    if (query.completed){
+      match['completed'] = query.completed === 'true';
+    }
+    return match;
+  }
+
+  private getOptionsObject = (query: any) => {
+    const options = {};
+    if (query.limit){
+      options['limit'] = parseInt(query.limit)
+    }
+
+    if (query.skip){
+      options['skip'] = parseInt(query.skip);
+    }
+    return options;
   }
 
 }

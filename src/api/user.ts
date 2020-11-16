@@ -26,7 +26,7 @@ class UserController implements Controller {
 
   loginUser = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const [user, token] = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
+      const { user, token } = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
       response.status(200).send({ user, token });
     } catch (error) {
       next(new IncorrectCredentialsException());
@@ -35,16 +35,16 @@ class UserController implements Controller {
 
   logoutUser = async(request: any, response: Response, next: NextFunction) => {
     try {
-      await this.userService.refreshJwtTokens(request.user, request.token);
+      await this.userService.refreshTokenAndLogout(request.user, request.token);
       response.sendStatus(200);
-    } catch (e) {
+    } catch (error) {
       next(new HttpException(500, "Unable to logout user"))
     }
   }
 
   createUser = async (request: Request, response, next: NextFunction) => {
     try {
-      const [user, token] = await this.userService.createUser(request.body);
+      const { user, token } = await this.userService.createUser(request.body);
       response.status(201).send({ user, token });
     } catch (error) {
       next(new HttpException(400, "Unable to create user"));
@@ -54,7 +54,7 @@ class UserController implements Controller {
   getUserById = async (request: any, response: Response, next: NextFunction) => {
     try {
       response.status(200).send({ user: request.user });
-    } catch (e) {
+    } catch (error) {
       next(new HttpException(400, "Unable to get user"));
     }
   }
@@ -62,8 +62,8 @@ class UserController implements Controller {
   updateUser = async (request, response: Response, next: NextFunction) => {
     try {
       const user = await this.userService.updateUser(request.body, request.user);
-      response.status(404).send(user);
-    } catch(e) {
+      response.status(200).send(user);
+    } catch(error) {
       next(new HttpException(400, "Unable to update user"));
     }
   }
@@ -73,7 +73,7 @@ class UserController implements Controller {
       // TODO - How do you prevent people from sending a request to delete a user that is not them?
       await User.findByIdAndDelete(request.user._id)
       response.sendStatus(200);
-    } catch (e) {
+    } catch (error) {
       next(new HttpException(400, "Unable to delete user"));
     }
   }

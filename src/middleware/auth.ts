@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+require('dotenv').config()
 const jwt = require('jsonwebtoken');
 import User from '../models/user';
 import ResourceNotFoundException from '../exceptions/ResourceNotFoundException';
+import UnableToAuthenticateException from '../exceptions/UnableToAuthenticateException';
 
 const auth = async (request, response: Response, next: NextFunction) => {
   try {
@@ -9,9 +11,6 @@ const auth = async (request, response: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, 'temp');
     const user = await User.findOne({ _id: decoded._id, 'tokens.token': token });
 
-    //TODO - you are accessing the user from the DB twice - fix! Pass down with response
-    //This would request you to create a new request interface
-    //Should this logic all be in the business layer?
     if (!user){
       throw new ResourceNotFoundException('User', decoded._id);
     }
@@ -20,8 +19,7 @@ const auth = async (request, response: Response, next: NextFunction) => {
     request.user = user;
     next();
   } catch (e) {
-    response.status(401).send({ error: 'Please authenticate' })
-    //TODO - Update this to proper error object?
+    next(new UnableToAuthenticateException())
   }
 }
 

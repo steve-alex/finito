@@ -10,9 +10,7 @@ const areaController = require('./api/area');
 
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
-  // TODO - put this in process.env file
   private dbConnectionSettings: DBConnectionSettings = { useUnifiedTopology: true, useNewUrlParser: true };
-  // TODO - put this in its own settings folder
   public app: express.Application;
   public port: number;
 
