@@ -1,8 +1,5 @@
 import Task from '../models/task';
 import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException';
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 class TaskService {
   constructor(){ }
@@ -12,27 +9,34 @@ class TaskService {
       ...updatedTask,
       owner: userId
     })
+
     await task.save();
+
     return task;
   }
 
   public getTaskById = async (taskId, userId) => {
     const task = await Task.findOne({ _id: taskId, owner: userId });
+
     if (!task){
-      throw new ResourceNotFoundException('Task', taskId);
+      throw new HttpException(404, 'Task not found');
     }
+
     return task;
   }
 
   public getTasks = async (user: any, query: any) => {
-    const match = this.getMatchObject(query)
-    const options = this.getOptionsObject(query)
-    await user.populate('tasks').execPopulate({
+    const match = this.getMatchObject(query);
+    const options = this.getOptionsObject(query);
+    const sortBy = this.getSortObject(query);
+
+    const tasks = await user.populate('tasks').execPopulate({
       path: 'tasks',
       match,
-      options
-    })
-    const tasks = user.tasks;
+      options,
+      sortBy
+    }).tasks;
+
     return tasks;
   }
 
@@ -42,17 +46,19 @@ class TaskService {
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidOperation){
-      throw new HttpException(400, "Invalid updates");
+      throw new HttpException(405, "Invalid Updates");
     }
 
     const task = await Task.findOne({ _id: taskId, owner: userId });
 
     if (!task){
-      throw new ResourceNotFoundException('Task', taskId);
+      throw new HttpException(404, "Task not found");
     }
 
     updates.forEach((update) => task[update] = updatedTask[update]);
+    
     await task.save();
+
     return task;
   }
 
@@ -60,7 +66,7 @@ class TaskService {
     const task = await Task.findOne({ _id: taskId, owner: userId });
 
     if (!task){
-      throw new ResourceNotFoundException('Task', taskId);
+      throw new HttpException(404, "Task not found");
     }
 
     task.deleteOne();
@@ -72,14 +78,17 @@ class TaskService {
 
   private getMatchObject = (query: any) => {
     const match = {};
+
     if (query.completed){
       match['completed'] = query.completed === 'true';
     }
+
     return match;
   }
 
   private getOptionsObject = (query: any) => {
     const options = {};
+
     if (query.limit){
       options['limit'] = parseInt(query.limit)
     }
@@ -87,7 +96,18 @@ class TaskService {
     if (query.skip){
       options['skip'] = parseInt(query.skip);
     }
+
     return options;
+  }
+
+  private getSortObject = (query: any) => {
+    const sort = {};
+
+    if (query.sortBy){
+      const parts = query.sortBy.split(':');
+      sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+    }
+    return sort;
   }
 
 }

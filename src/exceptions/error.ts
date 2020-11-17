@@ -1,11 +1,18 @@
 class HttpException extends Error {
-  status: number;
-  message: string;
+  httpCode: number;
+  name: string;
+  // description: string;
 
-  constructor(status: number, message: string){
+  constructor(httpCode: number, name: string){
     super();
-    this.status = status;
-    this.message = message;
+
+    Object.setPrototypeOf(this, new.target.prototype)
+
+    this.httpCode = httpCode;
+    this.name = name;
+
+    Error.captureStackTrace(this)
+    //TODO - test this out across the application
   };
 
 }

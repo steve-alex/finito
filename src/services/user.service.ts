@@ -25,7 +25,7 @@ class UserService {
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidOperation){
-      throw new HttpException(400, "Invalid Updates");
+      throw new HttpException(405, "Invalid Updates");
     }
 
     updates.forEach((update) => currentUser[update] = updatedUser[update]);
@@ -37,15 +37,13 @@ class UserService {
     const user = await User.findOne({ email });
 
     if (!user){
-      throw new Error('User not found');
-      //TODO - Create a new error for this
+      throw new HttpException(404, "User not found");
     }
   
     const isMatch = await bcrypt.compare(password, user.password);
   
     if (!isMatch){
-      throw new Error('Unable to login');
-      //TODO - Create a new error for this
+      throw new HttpException(403, "Unable to login");
     }
   
     return user;

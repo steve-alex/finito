@@ -28,8 +28,8 @@ class TaskController implements Controller {
       const userId = request.user._id;
       const task = await this.taskService.createTask(updatedTask, userId);
       response.status(201).send(task);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to create task'));
+    } catch (error) {
+      next(error);
     }
   }
 
@@ -39,8 +39,8 @@ class TaskController implements Controller {
       const userId = request.user._id;
       const task = await this.taskService.getTaskById(taskId, userId)
       response.status(200).send(task);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to get task'))
+    } catch (error) {
+      next(error)
     }
   }
 
@@ -48,8 +48,8 @@ class TaskController implements Controller {
     try {
       const tasks = await this.taskService.getTasks(request.user, request.query)
       response.status(200).send(tasks);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to get tasks'))
+    } catch (error) {
+      next(error)
     }
   }
 
@@ -60,8 +60,8 @@ class TaskController implements Controller {
       const userId = request.user._id;
       const task = await this.taskService.updateTask(updatedTask, taskId, userId);
       response.status(200).send(task);
-    } catch(e) {
-      next(new HttpException(400, "Unable to update task"));
+    } catch(error) {
+      next(error);
     }
   }
 
@@ -71,8 +71,8 @@ class TaskController implements Controller {
       const userId = request.user._id;
       await this.taskService.deleteTask(taskId, userId);
       response.sendStatus(200);
-    } catch (e) {
-      next(new HttpException(400, "Unable to delete task"));
+    } catch (error) {
+      next(error);
     }
   }
 }

@@ -2,9 +2,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
-import HttpException from '../exceptions/error';
-import IncorrectCredentialsException from '../exceptions/IncorrectCredentialsException';
 const UserService = require('../services/user.service');
+// TODO - Update exceptions
 
 class UserController implements Controller {
   public path = '/users';
@@ -29,7 +28,7 @@ class UserController implements Controller {
       const { user, token } = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
       response.status(200).send({ user, token });
     } catch (error) {
-      next(new IncorrectCredentialsException());
+      next(error);
     }
   }
 
@@ -38,7 +37,7 @@ class UserController implements Controller {
       await this.userService.refreshTokenAndLogout(request.user, request.token);
       response.sendStatus(200);
     } catch (error) {
-      next(new HttpException(500, "Unable to logout user"))
+      next(error)
     }
   }
 
@@ -47,7 +46,7 @@ class UserController implements Controller {
       const { user, token } = await this.userService.createUser(request.body);
       response.status(201).send({ user, token });
     } catch (error) {
-      next(new HttpException(400, "Unable to create user"));
+      next(error);
     }
   }
 
@@ -55,7 +54,7 @@ class UserController implements Controller {
     try {
       response.status(200).send({ user: request.user });
     } catch (error) {
-      next(new HttpException(400, "Unable to get user"));
+      next(error);
     }
   }
 
@@ -64,7 +63,7 @@ class UserController implements Controller {
       const user = await this.userService.updateUser(request.body, request.user);
       response.status(200).send(user);
     } catch(error) {
-      next(new HttpException(400, "Unable to update user"));
+      next(error);
     }
   }
 
@@ -74,7 +73,7 @@ class UserController implements Controller {
       await User.findByIdAndDelete(request.user._id)
       response.sendStatus(200);
     } catch (error) {
-      next(new HttpException(400, "Unable to delete user"));
+      next(error);
     }
   }
 }

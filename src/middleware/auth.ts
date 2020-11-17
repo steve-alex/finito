@@ -2,8 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 require('dotenv').config()
 const jwt = require('jsonwebtoken');
 import User from '../models/user';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException';
-import UnableToAuthenticateException from '../exceptions/UnableToAuthenticateException';
+import HttpException from '../exceptions/error';
 
 const auth = async (request, response: Response, next: NextFunction) => {
   try {
@@ -12,14 +11,14 @@ const auth = async (request, response: Response, next: NextFunction) => {
     const user = await User.findOne({ _id: decoded._id, 'tokens.token': token });
 
     if (!user){
-      throw new ResourceNotFoundException('User', decoded._id);
+      next(new HttpException(404, 'Unable to get user'));
     }
 
     request.token = token;
     request.user = user;
     next();
-  } catch (e) {
-    next(new UnableToAuthenticateException())
+  } catch (error) {
+    next(error);
   }
 }
 
