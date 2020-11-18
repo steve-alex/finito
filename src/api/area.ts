@@ -4,7 +4,7 @@ import Area from '../models/area';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
 import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
-
+//TODO - Update Exceptions
 
 class AreaController implements Controller {
   public path = '/areas';

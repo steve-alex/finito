@@ -4,7 +4,7 @@ import Project from '../models/project';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
 import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
-
+// TODO - Update exceptions
 
 class ProjectController implements Controller {
   public path = '/projects';
