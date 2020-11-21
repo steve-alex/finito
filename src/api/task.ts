@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
-const TaskService = require('../services/task.service');
+import TaskService from '../services/task.service';
+import RequestDTO from '../interface/RequestDTO.interface';
 
 class TaskController implements Controller {
   public path = '/tasks';
@@ -20,10 +21,11 @@ class TaskController implements Controller {
     this.router.delete(`${this.path}/:id`, auth, this.deleteTask);
   }
 
-  createTask = async (request: any, response: Response, next: NextFunction) => {
+  createTask = async (request: RequestDTO, response: Response, next: NextFunction) => {
+    const updatedTask = request.body;
+    const userId = request.user._id;
+
     try {
-      const updatedTask = request.body;
-      const userId = request.user._id;
       const task = await this.taskService.createTask(updatedTask, userId);
       response.status(201).send(task);
     } catch (error) {
@@ -31,10 +33,11 @@ class TaskController implements Controller {
     }
   }
 
-  getTaskById = async (request: any, response: Response, next: NextFunction) => {
+  getTaskById = async (request: RequestDTO, response: Response, next: NextFunction) => {
+    const taskId = request.params.id;
+    const userId = request.user._id;
+
     try {
-      const taskId = request.params.id;
-      const userId = request.user._id;
       const task = await this.taskService.getTaskById(taskId, userId)
       response.status(200).send(task);
     } catch (error) {
@@ -42,7 +45,7 @@ class TaskController implements Controller {
     }
   }
 
-  getTasks = async (request: any, response: Response, next: NextFunction) => {
+  getTasks = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const tasks = await this.taskService.getTasks(request.user, request.query)
       response.status(200).send(tasks);
@@ -51,11 +54,12 @@ class TaskController implements Controller {
     }
   }
 
-  updateTask = async (request: any, response: Response, next: NextFunction) => {
+  updateTask = async (request: RequestDTO, response: Response, next: NextFunction) => {
+    const updatedTask = request.body;  
+    const taskId = request.params.id;
+    const userId = request.user._id;
+
     try {
-      const updatedTask = request.body;  
-      const taskId = request.params.id;
-      const userId = request.user._id;
       const task = await this.taskService.updateTask(updatedTask, taskId, userId);
       response.status(200).send(task);
     } catch(error) {
@@ -63,10 +67,11 @@ class TaskController implements Controller {
     }
   }
 
-  deleteTask = async (request: any, response: Response, next: NextFunction) => {
+  deleteTask = async (request: RequestDTO, response: Response, next: NextFunction) => {
+    const taskId = request.params.id;
+    const userId = request.user._id;
+
     try {
-      const taskId = request.params.id;
-      const userId = request.user._id;
       await this.taskService.deleteTask(taskId, userId);
       response.sendStatus(200);
     } catch (error) {

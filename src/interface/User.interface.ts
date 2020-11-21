@@ -1,7 +1,8 @@
 interface User {
-  name: String,
-  email: String,
-  age: Number
+  _id: string,
+  name: string,
+  email: string,
+  age: number
 }
 
 export default User;

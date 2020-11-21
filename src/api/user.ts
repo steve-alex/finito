@@ -3,7 +3,7 @@ import User from '../models/user';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
 import UserService from '../services/user.service';
-// import any from '../interface/RequestDTO.interface';
+import RequestDTO from '../interface/RequestDTO.interface';
 
 class UserController implements Controller {
   public path = '/users';
@@ -23,7 +23,7 @@ class UserController implements Controller {
     this.router.delete(`${this.path}/:id`, auth, this.deleteUser);
   }
 
-  loginUser = async (request: any, response: Response, next: NextFunction) => {
+  loginUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const { user, token } = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
       response.status(200).send({ user, token });
@@ -32,7 +32,7 @@ class UserController implements Controller {
     }
   }
 
-  logoutUser = async(request: any, response: Response, next: NextFunction) => {
+  logoutUser = async(request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       await this.userService.refreshCurrentSessionToken(request.user, request.token);
       response.sendStatus(200);
@@ -41,7 +41,7 @@ class UserController implements Controller {
     }
   }
 
-  createUser = async (request: any, response: Response, next: NextFunction) => {
+  createUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const { user, token } = await this.userService.createUser(request.body);
       response.status(201).send({ user, token });
@@ -50,7 +50,7 @@ class UserController implements Controller {
     }
   }
 
-  getUserById = async (request: any, response: Response, next: NextFunction) => {
+  getUserById = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       response.status(200).send({ user: request.user });
     } catch (error) {
@@ -58,7 +58,7 @@ class UserController implements Controller {
     }
   }
 
-  updateUser = async (request: any, response: Response, next: NextFunction) => {
+  updateUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const user = await this.userService.updateUser(request.body, request.user);
       response.status(200).send(user);
@@ -67,9 +67,8 @@ class UserController implements Controller {
     }
   }
 
-  deleteUser = async (request: any, response: Response, next: NextFunction) => {
+  deleteUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
-      // TODO - How do you prevent people from sending a request to delete a user that is not them?
       await User.findByIdAndDelete(request.user._id)
       response.sendStatus(200);
     } catch (error) {
