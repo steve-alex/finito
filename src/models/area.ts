@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const AreaSchema = new mongoose.Schema({
   name: {
     type: String,
-    trim: true
+    trim: true,
+    required: true
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

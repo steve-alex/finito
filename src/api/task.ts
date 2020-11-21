@@ -1,8 +1,6 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
-import Task from '../models/task';
 import auth from '../middleware/auth';
-import HttpException from '../exceptions/error';
 const TaskService = require('../services/task.service');
 
 class TaskController implements Controller {
@@ -77,4 +75,4 @@ class TaskController implements Controller {
   }
 }
 
-module.exports = TaskController;
+export default TaskController;

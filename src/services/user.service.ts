@@ -58,7 +58,7 @@ class UserService {
     return token;
   }
 
-  public refreshTokenAndLogout = async (user:any, currentSessionToken: any) => {
+  public refreshCurrentSessionToken = async (user:any, currentSessionToken: any) => {
     //TODO - This function needs a better name
     user.tokens = user.tokens.filter(token => {
       return token.token !== currentSessionToken;
@@ -68,4 +68,4 @@ class UserService {
   }
 }
 
-module.exports = UserService;
+export default UserService;

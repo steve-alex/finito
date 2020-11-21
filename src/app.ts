@@ -2,11 +2,11 @@ import express  from 'express';
 import mongoose from 'mongoose';
 import DBConnectionSettings from './interface/DbConnectionSettings.interface';
 import errorMiddleware from './middleware/error';
-import { loggerMiddleWare } from "./middleware/logger";
-const userController = require('./api/user');
-const taskController = require('./api/task');
-const projectController = require('./api/project');
-const areaController = require('./api/area');
+import loggerMiddleWare from "./middleware/logger";
+import UserController from './api/user';
+import TaskController from './api/task';
+import AreaController from './api/area';
+import ProjectController from './api/project';
 
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
@@ -35,10 +35,10 @@ class App {
   }
 
   private initializeControllers(){
-    this.app.use(new userController().router);
-    this.app.use(new taskController().router);
-    this.app.use(new areaController().router);
-    this.app.use(new projectController().router);
+    this.app.use(new UserController().router);
+    this.app.use(new TaskController().router);
+    this.app.use(new AreaController().router);
+    this.app.use(new ProjectController().router);
   }
 
   public listen(){
