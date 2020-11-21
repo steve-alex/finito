@@ -109,7 +109,6 @@ class TaskService {
     }
     return sort;
   }
-
 }
 
 export default TaskService;

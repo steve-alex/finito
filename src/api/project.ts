@@ -1,14 +1,13 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
-import Project from '../models/project';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
-// TODO - Update exceptions
+import ProjectService from '../services/project.service';
 
 class ProjectController implements Controller {
   public path = '/projects';
   public router = Router();
+  public projectService = new ProjectService();
 
   constructor(){
     this.initializeRoutes();
@@ -22,72 +21,50 @@ class ProjectController implements Controller {
   }
 
   createProject = async (request: any, response: Response, next: NextFunction) => {
-    const task = new Project({
-      ...request.body,
-      owner: request.user._id
-    })
+    const projectDetails = request.body;
+    const userId = request.user._id;
 
     try {
-      await task.save();
-      response.status(201).send(task);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to create project'));
+      const project = await this.projectService.createProject(projectDetails, userId);
+      response.status(201).send(project);
+    } catch (error) {
+      next(error);
     }
   }
 
   getProjectById = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
+    const projectId = request.params.id;
+    const userId = request.user._id;
 
     try {
-      const project = await Project.findOne({ _id, owner: request.user._id });
-
-      if (!project) {
-        return next(new ResourceNotFoundException('Project', _id));
-      }
-
+      const project = await this.projectService.getProjectById(projectId, userId);
       response.status(200).send(project);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to get project'))
+    } catch (error) {
+      next(error)
     }
   }
 
   updateProject = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    const updates = Object.keys(request.body);
-    const allowedUpdates = ['name'];
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-    // TODO - move all of this into a new place? Some kind of helper folder?
+    const updatedProject = request.body;
+    const projectId = request.params.id;
+    const userId = request.user._id;
 
-    if (!isValidOperation){
-      return next(new HttpException(400, "Invalid updates"));
-    }
-    //TODO - Should I be type checking the request.body with an interface?
+    console.log('Updated Project: ', updatedProject);
 
     try {
-      const project = await Project.findOne({ _id, owner: request.user._id });
-
-      if (!project){
-        return next(new ResourceNotFoundException('Project', _id));
-      }
-
-      updates.forEach((update) => project[update] = request.body[update]);
-      await project.save();
+      const project = await this.projectService.updateProject(updatedProject, projectId, userId);
       response.status(200).send(project);
-    } catch(e) {
-      next(new HttpException(400, "Unable to update project"));
+    } catch(error) {
+      next(error);
     }
   }
 
   deleteProject = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
+    const projectId = request.params.id;
+    const userId = request.user._id;
     
     try {
-      const task = await Project.findOne({ _id, owner: request.user._id });
-
-      if (!task){
-        return next(new ResourceNotFoundException('Project', _id));
-      }
-      
+      await this.projectService.deleteProject(projectId, userId);
       response.sendStatus(200);
     } catch (e) {
       next(new HttpException(400, "Unable to delete Project"));
@@ -95,4 +72,4 @@ class ProjectController implements Controller {
   }
 }
 
-module.exports = ProjectController;
+export default ProjectController;

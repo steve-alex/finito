@@ -16,7 +16,7 @@ const AreaSchema = new mongoose.Schema({
 AreaSchema.virtual('projects', {
   ref: 'Project',
   localField: '_id',
-  foreignField: 'parentArea'
+  foreignField: 'area'
 })
 
 const Area = mongoose.model('Area', AreaSchema);

@@ -10,10 +10,16 @@ const ProjectSchema = new mongoose.Schema({
     required: true,
     ref: 'User'
   },
-  parentArea: {
+  area: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Area'
   }
+})
+
+ProjectSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'project'
 })
 
 const Project = mongoose.model('Project', ProjectSchema);

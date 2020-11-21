@@ -1,14 +1,12 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
-import Area from '../models/area';
 import auth from '../middleware/auth';
-import HttpException from '../exceptions/error';
-import ResourceNotFoundException from '../exceptions/ResourceNotFoundException'
-//TODO - Update Exceptions
+import AreaService from '../services/area.service';
 
 class AreaController implements Controller {
   public path = '/areas';
   public router = Router();
+  public areaService = new AreaService;
 
   constructor(){
     this.initializeRoutes();
@@ -22,77 +20,53 @@ class AreaController implements Controller {
   }
 
   createArea = async (request: any, response: Response, next: NextFunction) => {
-    const task = new Area({
-      ...request.body,
-      owner: request.user._id
-    })
+    const name = request.body.name;
+    const userId = request.user._id;
 
     try {
-      await task.save();
-      response.status(201).send(task);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to create area'));
+      const area = await this.areaService.createArea(name, userId);
+      response.status(201).send(area);
+    } catch (error) {
+      next(error);
     }
   }
 
   getAreaById = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
+    const areaId = request.params.id;
+    const userId = request.user._id
 
     try {
-      const area = await Area.findOne({ _id, owner: request.user._id });
-
-      if (!area){
-        return next(new ResourceNotFoundException('Area', _id));
-      }
-
+      const area = await this.areaService.getAreaById(areaId, userId);
       response.status(200).send(area);
-    } catch (e) {
-      next(new HttpException(400, 'Unable to get area'))
+    } catch (error) {
+      next(error)
     }
   }
 
   updateArea = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    const updates = Object.keys(request.body);
-    const allowedUpdates = ['name'];
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-    // TODO - move all of this into a new place? Some kind of helper folder?
-
-    if (!isValidOperation){
-      return next(new HttpException(400, "Invalid updates"));
-    }
-    //TODO - Should I be type checking the request.body with an interface?
+    const updatedArea = request.body;
+    const areaId = request.params.id;
+    const userId = request.user._id;
 
     try {
-      const area = await Area.findOne({ _id, owner: request.user._id });
-
-      if (!area){
-        return next(new ResourceNotFoundException('Area', _id));
-      }
-
-      updates.forEach((update) => area[update] = request.body[update]);
-      await area.save();
+      const area = await this.areaService.updateArea(updatedArea, areaId, userId);
       response.status(200).send(area);
-    } catch(e) {
-      next(new HttpException(400, "Unable to update area"));
+    } catch(error) {
+      next(error);
     }
   }
 
   deleteArea = async (request: any, response: Response, next: NextFunction) => {
-    const _id = request.params.id;
-    
-    try {
-      const task = await Area.findOne({ _id, owner: request.user._id });
+    const areaId = request.params.id;
+    const userId = request.user._id;
 
-      if (!task){
-        return next(new ResourceNotFoundException('Area', _id));
-      }
-      
+    try {
+      await this.areaService.deleteArea(areaId, userId);
       response.sendStatus(200);
-    } catch (e) {
-      next(new HttpException(400, "Unable to delete Area"));
+    } catch (error) {
+      next(error);
     }
   }
 }
 
-module.exports = AreaController;
+export default AreaController;
