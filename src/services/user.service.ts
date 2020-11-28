@@ -33,6 +33,45 @@ class UserService {
     return currentUser;
   }
 
+  public getNavigationItems = async (user: any) => {
+    const populatedUser = await user.populate('areas').populate('projects').execPopulate();
+    const areas = populatedUser["areas"];
+    const projects = populatedUser["projects"];
+    const navigationItems = this.createNavigationItemsObject(areas, projects);
+    return navigationItems;
+  }
+
+  private createNavigationItemsObject(areas: any, projects: any){
+    const navigationItems = {
+      projects: [],
+      areas: this.getModifiedAreasObject(areas)
+    };
+    
+    projects.forEach(project => {
+      if (project.area === undefined){
+        navigationItems.projects.push(project);
+      } else {
+        navigationItems.areas[project.area]['projects'].push(project);
+      }
+    })
+
+    return navigationItems
+  }
+
+  private getModifiedAreasObject(areas: any) {
+    let modifiedAreas = {};
+    areas.forEach(area => {
+      let _id = area._id
+      modifiedAreas[_id] = {
+        name: area.name,
+        owner: area.owner,
+        projects: []
+      }
+    })
+      
+    return modifiedAreas;
+  }
+
   private findByCredentials = async (email: string, password: string) => {
     const user = await User.findOne({ email });
 

@@ -17,6 +17,7 @@ class UserController implements Controller {
   public initializeRoutes(){
     this.router.post(`${this.path}/login`, this.loginUser);
     this.router.post(`${this.path}/logout`, auth, this.logoutUser);
+    this.router.get(`${this.path}/navigation`, auth, this.getNavigationItems);
     this.router.post(this.path, this.createUser);
     this.router.get(`${this.path}/:id`, auth, this.getUserById);
     this.router.patch(`${this.path}/:id`, auth, this.updateUser);
@@ -72,6 +73,18 @@ class UserController implements Controller {
       await User.findByIdAndDelete(request.user._id)
       response.sendStatus(200);
     } catch (error) {
+      next(error);
+    }
+  }
+
+  getNavigationItems = async (request: RequestDTO, response: Response, next: NextFunction) => {
+    const user = request.user;
+    console.log("User: ", user);
+
+    try {
+      const navigationItems = await this.userService.getNavigationItems(user);
+      response.status(200).send(navigationItems);
+    } catch(error) {
       next(error);
     }
   }

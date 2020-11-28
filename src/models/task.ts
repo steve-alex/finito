@@ -17,18 +17,18 @@ const TaskSchema = new mongoose.Schema({
     default: false
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.ObjectId,
     required: true,
     ref: 'User'
   },
   project: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.ObjectId,
     ref: 'Project'
   }
 }, {
   timestamps: true
 })
 
-const Task = mongoose.model('Task', TaskSchema, 'tasks');
+const Task = mongoose.model('Task', TaskSchema);
 
 export default Task;

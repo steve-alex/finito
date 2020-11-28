@@ -30,19 +30,21 @@ class TaskService {
     const options = this.getOptionsObject(query);
     const sortBy = this.getSortObject(query);
 
-    const tasks = await user.populate('tasks').execPopulate({
+    const populatedUser = await user.populate('tasks').execPopulate({
       path: 'tasks',
       match,
       options,
       sortBy
-    }).tasks;
-
+    });
+    
+    const tasks = populatedUser.tasks;
+                          
     return tasks;
   }
 
   public updateTask = async (updatedTask: any, taskId, userId) => {
     const updates = Object.keys(updatedTask);
-    const allowedUpdates = ['header', 'description', 'date', 'completed'];
+    const allowedUpdates = ['header', 'description', 'date', 'completed', 'project'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidOperation){

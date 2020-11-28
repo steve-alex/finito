@@ -68,6 +68,10 @@ userSchema.virtual('projects', {
   foreignField: 'owner'
 })
 
+//TODO - Understand how this works **PROPERLY**
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
+
 userSchema.methods.toJSON = function() {
   const user = this;
   const userObject = user.toObject();
@@ -94,6 +98,6 @@ userSchema.pre('remove', async function(next: NextFunction) {
   next();
 });
 
-const User = mongoose.model('User', userSchema, 'users'); 
+const User = mongoose.model('User', userSchema); 
 
 export default User;

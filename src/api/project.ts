@@ -3,6 +3,7 @@ import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
 import ProjectService from '../services/project.service';
+import RequestDTO from '../interface/RequestDTO.interface';
 
 class ProjectController implements Controller {
   public path = '/projects';
@@ -20,7 +21,7 @@ class ProjectController implements Controller {
     this.router.delete(`${this.path}/:id`, auth, this.deleteProject);
   }
 
-  createProject = async (request: any, response: Response, next: NextFunction) => {
+  createProject = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const projectDetails = request.body;
     const userId = request.user._id;
 
@@ -32,7 +33,7 @@ class ProjectController implements Controller {
     }
   }
 
-  getProjectById = async (request: any, response: Response, next: NextFunction) => {
+  getProjectById = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const projectId = request.params.id;
     const userId = request.user._id;
 
@@ -44,7 +45,7 @@ class ProjectController implements Controller {
     }
   }
 
-  updateProject = async (request: any, response: Response, next: NextFunction) => {
+  updateProject = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const updatedProject = request.body;
     const projectId = request.params.id;
     const userId = request.user._id;
@@ -59,7 +60,7 @@ class ProjectController implements Controller {
     }
   }
 
-  deleteProject = async (request: any, response: Response, next: NextFunction) => {
+  deleteProject = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const projectId = request.params.id;
     const userId = request.user._id;
     

@@ -7,6 +7,7 @@ import UserController from './api/user';
 import TaskController from './api/task';
 import AreaController from './api/area';
 import ProjectController from './api/project';
+const cors = require('cors');
 
 class App {
   private connectionUrl: string = 'mongodb://127.0.0.1:27017/finito-api';
@@ -32,6 +33,7 @@ class App {
     this.app.use(express.json());
     this.app.use(loggerMiddleWare);
     this.app.use(errorMiddleware);
+    this.app.use(cors())
   }
 
   private initializeControllers(){
