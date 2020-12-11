@@ -7,7 +7,7 @@ import HttpException from '../exceptions/error';
 const auth = async (request, response: Response, next: NextFunction) => {
   try {
     const token = request.header('Authorization').replace('Bearer ', '');
-    const decoded = jwt.verify(token, 'temp');
+    const decoded = jwt.verify(token, process.env.JWT_SIGNATURE);
     const user = await User.findOne({ _id: decoded._id, 'tokens.token': token });
 
     if (!user){

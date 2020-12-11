@@ -2,6 +2,7 @@ import User from '../models/user';
 import HttpException from '../exceptions/error';
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 class UserService {
   constructor(){ }
@@ -89,8 +90,7 @@ class UserService {
   }
 
   private generateAuthToken = async (user) => {    
-    const token = jwt.sign({ _id: user._id.toString() }, 'temp')
-    // TODO - put this into env variable
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SIGNATURE)
     user.tokens = user.tokens.concat({ token })
     await user.save();
 

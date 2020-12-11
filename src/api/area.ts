@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
+import RequestDTO from '../interface/RequestDTO.interface';
 import auth from '../middleware/auth';
 import AreaService from '../services/area.service';
 
@@ -19,7 +20,7 @@ class AreaController implements Controller {
     this.router.delete(`${this.path}/:id`, auth, this.deleteArea);
   }
 
-  createArea = async (request: any, response: Response, next: NextFunction) => {
+  createArea = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const name = request.body.name;
     const userId = request.user._id;
 
@@ -31,7 +32,7 @@ class AreaController implements Controller {
     }
   }
 
-  getAreaById = async (request: any, response: Response, next: NextFunction) => {
+  getAreaById = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const areaId = request.params.id;
     const userId = request.user._id
 
@@ -43,7 +44,7 @@ class AreaController implements Controller {
     }
   }
 
-  updateArea = async (request: any, response: Response, next: NextFunction) => {
+  updateArea = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const updatedArea = request.body;
     const areaId = request.params.id;
     const userId = request.user._id;
@@ -56,7 +57,7 @@ class AreaController implements Controller {
     }
   }
 
-  deleteArea = async (request: any, response: Response, next: NextFunction) => {
+  deleteArea = async (request: RequestDTO, response: Response, next: NextFunction) => {
     const areaId = request.params.id;
     const userId = request.user._id;
 
