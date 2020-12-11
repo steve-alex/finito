@@ -1,1 +1,1 @@
-TLDR: API for a task manager application.
+TypeScript/Node.JS API for a task management app
