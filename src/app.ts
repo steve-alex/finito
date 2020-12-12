@@ -10,9 +10,7 @@ import AreaController from './api/area';
 import ProjectController from './api/project';
 require('dotenv').config();
 
-
 class App {
-  private connectionUrl: string = process.env.CONNECTION_URL;
   private dbConnectionSettings: DBConnectionSettings = { useUnifiedTopology: true, useNewUrlParser: true };
   public app: express.Application;
   public port: number;
@@ -33,8 +31,9 @@ class App {
   }
 
   private connectToDatabase(){
-    mongoose.connect(this.connectionUrl, this.dbConnectionSettings)
-    //TODO - Consider how this step would work with CI/CD!
+    mongoose.connect(process.env.CONNECTION_URL, this.dbConnectionSettings)
+      .then(client => console.log("Successful connection"))
+      .catch(error => console.log("Error: ", error))
   }
 
   private initializeMiddleware(){

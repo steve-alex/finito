@@ -1,5 +1,6 @@
 import Task from '../models/task';
 import HttpException from '../exceptions/error';
+import RedisClient from './cache.service';
 
 class TaskService {
   constructor(){ }
@@ -30,6 +31,13 @@ class TaskService {
     const options = this.getOptionsObject(query);
     const sortBy = this.getSortObject(query);
 
+    const cachedTasks = await RedisClient.get(user._id.toString())
+
+    if (cachedTasks){
+      console.log("Serving from Cache")
+      return JSON.parse(cachedTasks);
+    }
+
     const populatedUser = await user.populate('tasks').execPopulate({
       path: 'tasks',
       match,
@@ -38,7 +46,10 @@ class TaskService {
     });
     
     const tasks = populatedUser.tasks;
-                          
+
+    RedisClient.set(user._id.toString(), JSON.stringify(tasks));
+            
+    console.log("Serving from Mongodb")
     return tasks;
   }
 
@@ -72,10 +83,6 @@ class TaskService {
     }
 
     task.deleteOne();
-  }
-
-  private findByCredentials = async (email: string, password: string) => {
-
   }
 
   private getMatchObject = (query: any) => {

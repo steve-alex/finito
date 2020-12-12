@@ -10,7 +10,5 @@ interface RequestDTO extends Request {
   user: User,
   token: String
 }
-// TODO - Is this even right? Should I be containing some information here about request itself?
-// Does this prevent information about the request going through? Hmmm...
 
 export default RequestDTO;

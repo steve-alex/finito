@@ -44,8 +44,8 @@ class UserService {
 
   private createNavigationItemsObject(areas: any, projects: any){
     const navigationItems = {
-      projects: [],
-      areas: this.getModifiedAreasObject(areas)
+      projects: [], //TODO - create a function that populates this aswell
+      areas: this.getModifiedAreasObject(areas) //TODO - Rename this function
     };
     
     projects.forEach(project => {
@@ -60,6 +60,7 @@ class UserService {
   }
 
   private getModifiedAreasObject(areas: any) {
+    // [{ _id: { name: "name", owner: "owner": projects: ["project1", "project2"] }}]
     let modifiedAreas = {};
     areas.forEach(area => {
       let _id = area._id
