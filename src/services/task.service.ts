@@ -31,14 +31,25 @@ class TaskService {
     const options = this.getOptionsObject(query);
     const sortBy = this.getSortObject(query);
 
-    const cachedTasks = await RedisClient.get(user._id.toString())
-
-    if (cachedTasks){
+    const cachedTasks = await RedisClient.get(user._id.toString());
+    
+    if (cachedTasks){ 
       console.log("Serving from Cache")
       return JSON.parse(cachedTasks);
     }
 
-    const populatedUser = await user.populate('tasks').execPopulate({
+    const userQuery = user.populate('tasks');
+
+    userQuery.execPopulate = function(){
+      const result = RedisClient.get('')
+      if (result){
+        return result;
+      }
+    }
+    
+    const populatedUser = await user.populate('tasks')
+  
+    .execPopulate({
       path: 'tasks',
       match,
       options,
