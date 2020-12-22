@@ -40,6 +40,7 @@ class App {
     this.app.use(express.json());
     this.app.use(loggerMiddleWare);
     this.app.use(errorMiddleware);
+    // TODO - Do the overwrite of exec function here?
     this.app.use(cors())
   }
 

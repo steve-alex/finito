@@ -1,9 +1,12 @@
 import Task from '../models/task';
 import HttpException from '../exceptions/error';
-import RedisClient from './cache.service';
+import { RedisClient, clearCache }  from './cache.service';
 
 class TaskService {
-  constructor(){ }
+  public redisClient;
+  constructor(){
+    this.redisClient = RedisClient;
+  }
 
   public createTask = async (updatedTask, userId: string) => {
     const task = new Task({
@@ -11,7 +14,7 @@ class TaskService {
       owner: userId
     })
 
-    await task.save();
+    await task.save().then(() => clearCache(userId))
 
     return task;
   }
@@ -29,38 +32,16 @@ class TaskService {
   public getTasks = async (user: any, query: any) => {
     const match = this.getMatchObject(query);
     const options = this.getOptionsObject(query);
-    const sortBy = this.getSortObject(query);
+    const sort = this.getSortObject(query);
 
-    const cachedTasks = await RedisClient.get(user._id.toString());
-    
-    if (cachedTasks){ 
-      console.log("Serving from Cache")
-      return JSON.parse(cachedTasks);
-    }
-
-    const userQuery = user.populate('tasks');
-
-    userQuery.execPopulate = function(){
-      const result = RedisClient.get('')
-      if (result){
-        return result;
-      }
-    }
-    
-    const populatedUser = await user.populate('tasks')
-  
-    .execPopulate({
-      path: 'tasks',
-      match,
-      options,
-      sortBy
-    });
-    
-    const tasks = populatedUser.tasks;
-
-    RedisClient.set(user._id.toString(), JSON.stringify(tasks));
-            
-    console.log("Serving from Mongodb")
+    const tasks = await Task.find({ owner: user._id })
+      .cache()
+      .sort({'createdAt': sort['sortBy']})
+      .limit(options['limit'])
+      .skip(options['skip'])
+      .where('completed').in(match['completed'])
+      .exec();
+      
     return tasks;
   }
 
@@ -73,7 +54,8 @@ class TaskService {
       throw new HttpException(405, "Invalid Updates");
     }
 
-    const task = await Task.findOne({ _id: taskId, owner: userId });
+    const task = await Task.findOne({ _id: taskId, owner: userId })
+                           .then(() => clearCache(userId));
 
     if (!task){
       throw new HttpException(404, "Task not found");
@@ -101,6 +83,8 @@ class TaskService {
 
     if (query.completed){
       match['completed'] = query.completed === 'true';
+    } else {
+      match['completed'] = [true, false]
     }
 
     return match;
@@ -124,9 +108,9 @@ class TaskService {
     const sort = {};
 
     if (query.sortBy){
-      const parts = query.sortBy.split(':');
-      sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+      return query.sortBy === 'desc' ? -1 : 1;
     }
+
     return sort;
   }
 }
