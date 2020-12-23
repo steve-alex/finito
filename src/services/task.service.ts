@@ -1,13 +1,11 @@
 import Task from '../models/task';
 import HttpException from '../exceptions/error';
-import { RedisClient, clearCache }  from './cache.service';
+import { clearCache }  from './cache.service';
 
 class TaskService {
   public redisClient;
-  constructor(){
+  constructor(RedisClient: any){
     this.redisClient = RedisClient;
-    // TODO - How can we init this functionality without the constructor? 
-    // TODO - We don't want to pull a service into another service
   }
 
   public createTask = async (updatedTask, userId: string) => {
@@ -56,13 +54,17 @@ class TaskService {
       throw new HttpException(405, "Invalid Updates");
     }
 
-    const task = await Task.findOne({ _id: taskId, owner: userId })
-                           .then(() => clearCache(userId));
+    console.log('taskId: ', taskId);
+    console.log('userId: ', userId);
+    
+    const task = await Task.findOne({ _id: taskId })
 
     if (!task){
       throw new HttpException(404, "Task not found");
     }
 
+    clearCache(userId)
+                    
     updates.forEach((update) => task[update] = updatedTask[update]);
     
     await task.save();
