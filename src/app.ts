@@ -31,7 +31,7 @@ class App {
   }
 
   private connectToDatabase(){
-    mongoose.connect(process.env.PROD_CONNECTION_URL, this.dbConnectionSettings)
+    mongoose.connect(process.env.CONNECTION_URL, this.dbConnectionSettings)
       .then(client => console.log("Successful connection"))
       .catch(error => console.log("Error: ", error))
   }

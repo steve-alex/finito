@@ -2,13 +2,12 @@ import { Router, Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
-import UserService from '../services/user.service';
 import RequestDTO from '../interface/RequestDTO.interface';
+import { userService } from '../services/services';
 
 class UserController implements Controller {
   public path = '/users';
   public router = Router();
-  public userService = new UserService();
 
   constructor(){
     this.initializeRoutes();
@@ -26,7 +25,7 @@ class UserController implements Controller {
 
   loginUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
-      const { user, token } = await this.userService.authenticateUserCredentials(request.body.email, request.body.password);
+      const { user, token } = await userService.authenticateUserCredentials(request.body.email, request.body.password);
       response.status(200).send({ user, token });
     } catch (error) {
       next(error);
@@ -35,7 +34,7 @@ class UserController implements Controller {
 
   logoutUser = async(request: RequestDTO, response: Response, next: NextFunction) => {
     try {
-      await this.userService.refreshCurrentSessionToken(request.user, request.token);
+      await userService.refreshCurrentSessionToken(request.user, request.token);
       response.sendStatus(200);
     } catch (error) {
       next(error)
@@ -44,7 +43,7 @@ class UserController implements Controller {
 
   createUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
-      const { user, token } = await this.userService.createUser(request.body);
+      const { user, token } = await userService.createUser(request.body);
       // TODO - rename this function to createUserAndGenerateToken?
       response.status(201).send({ user, token });
     } catch (error) {
@@ -62,7 +61,7 @@ class UserController implements Controller {
 
   updateUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
-      const user = await this.userService.updateUser(request.body, request.user);
+      const user = await userService.updateUser(request.body, request.user);
       response.status(200).send(user);
     } catch(error) {
       next(error);
@@ -83,7 +82,7 @@ class UserController implements Controller {
     console.log("User: ", user);
 
     try {
-      const navigationItems = await this.userService.getNavigationItems(user);
+      const navigationItems = await userService.getNavigationItems(user);
       response.status(200).send(navigationItems);
     } catch(error) {
       next(error);

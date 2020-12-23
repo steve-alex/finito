@@ -2,12 +2,11 @@ import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
 import RequestDTO from '../interface/RequestDTO.interface';
 import auth from '../middleware/auth';
-import AreaService from '../services/area.service';
+import { areaService } from '../services/services';
 
 class AreaController implements Controller {
   public path = '/areas';
   public router = Router();
-  public areaService = new AreaService;
 
   constructor(){
     this.initializeRoutes();
@@ -25,7 +24,7 @@ class AreaController implements Controller {
     const userId = request.user._id;
 
     try {
-      const area = await this.areaService.createArea(name, userId);
+      const area = await areaService.createArea(name, userId);
       response.status(201).send(area);
     } catch (error) {
       next(error);
@@ -37,7 +36,7 @@ class AreaController implements Controller {
     const userId = request.user._id
 
     try {
-      const area = await this.areaService.getAreaById(areaId, userId);
+      const area = await areaService.getAreaById(areaId, userId);
       response.status(200).send(area);
     } catch (error) {
       next(error)
@@ -50,7 +49,7 @@ class AreaController implements Controller {
     const userId = request.user._id;
 
     try {
-      const area = await this.areaService.updateArea(updatedArea, areaId, userId);
+      const area = await areaService.updateArea(updatedArea, areaId, userId);
       response.status(200).send(area);
     } catch(error) {
       next(error);
@@ -62,7 +61,7 @@ class AreaController implements Controller {
     const userId = request.user._id;
 
     try {
-      await this.areaService.deleteArea(areaId, userId);
+      await areaService.deleteArea(areaId, userId);
       response.sendStatus(200);
     } catch (error) {
       next(error);

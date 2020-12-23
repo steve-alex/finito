@@ -2,13 +2,12 @@ import { Router, Request, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
 import HttpException from '../exceptions/error';
-import ProjectService from '../services/project.service';
+import { projectService } from '../services/services';
 import RequestDTO from '../interface/RequestDTO.interface';
 
 class ProjectController implements Controller {
   public path = '/projects';
   public router = Router();
-  public projectService = new ProjectService();
 
   constructor(){
     this.initializeRoutes();
@@ -26,7 +25,7 @@ class ProjectController implements Controller {
     const userId = request.user._id;
 
     try {
-      const project = await this.projectService.createProject(projectDetails, userId);
+      const project = await projectService.createProject(projectDetails, userId);
       response.status(201).send(project);
     } catch (error) {
       next(error);
@@ -38,7 +37,7 @@ class ProjectController implements Controller {
     const userId = request.user._id;
 
     try {
-      const project = await this.projectService.getProjectById(projectId, userId);
+      const project = await projectService.getProjectById(projectId, userId);
       response.status(200).send(project);
     } catch (error) {
       next(error)
@@ -53,7 +52,7 @@ class ProjectController implements Controller {
     console.log('Updated Project: ', updatedProject);
 
     try {
-      const project = await this.projectService.updateProject(updatedProject, projectId, userId);
+      const project = await projectService.updateProject(updatedProject, projectId, userId);
       response.status(200).send(project);
     } catch(error) {
       next(error);
@@ -65,7 +64,7 @@ class ProjectController implements Controller {
     const userId = request.user._id;
     
     try {
-      await this.projectService.deleteProject(projectId, userId);
+      await projectService.deleteProject(projectId, userId);
       response.sendStatus(200);
     } catch (e) {
       next(new HttpException(400, "Unable to delete Project"));
