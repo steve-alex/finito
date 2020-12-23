@@ -6,6 +6,8 @@ class TaskService {
   public redisClient;
   constructor(){
     this.redisClient = RedisClient;
+    // TODO - How can we init this functionality without the constructor? 
+    // TODO - We don't want to pull a service into another service
   }
 
   public createTask = async (updatedTask, userId: string) => {
@@ -19,7 +21,7 @@ class TaskService {
     return task;
   }
 
-  public getTaskById = async (taskId, userId) => {
+  public getTaskById = async (taskId: string, userId: string) => {
     const task = await Task.findOne({ _id: taskId, owner: userId });
 
     if (!task){
@@ -35,17 +37,17 @@ class TaskService {
     const sort = this.getSortObject(query);
 
     const tasks = await Task.find({ owner: user._id })
-      .cache()
+      .useCache()
+      .where('completed').in(match['completed'])
       .sort({'createdAt': sort['sortBy']})
       .limit(options['limit'])
       .skip(options['skip'])
-      .where('completed').in(match['completed'])
       .exec();
       
     return tasks;
   }
 
-  public updateTask = async (updatedTask: any, taskId, userId) => {
+  public updateTask = async (updatedTask: any, taskId: string, userId: string) => {
     const updates = Object.keys(updatedTask);
     const allowedUpdates = ['header', 'description', 'date', 'completed', 'project'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
@@ -68,7 +70,7 @@ class TaskService {
     return task;
   }
 
-  public deleteTask = async (taskId, userId) => {
+  public deleteTask = async (taskId: string, userId: string) => {
     const task = await Task.findOne({ _id: taskId, owner: userId });
 
     if (!task){

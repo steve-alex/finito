@@ -6,9 +6,8 @@ export const RedisClient = redis.createClient(process.env.REDIS_URL);
 RedisClient.hget = util.promisify(RedisClient.hget)
 
 const exec = mongoose.Query.prototype.exec;
-console.log("Exec: ", exec);
 
-mongoose.Query.prototype.cache = function() {
+mongoose.Query.prototype.useCache = function() {
   this.useCache = true;
   return this;
   // Returning this makes this function chainable
@@ -20,25 +19,19 @@ mongoose.Query.prototype.exec = async function() {
 
   if (this.useCache){
     const userKey = JSON.stringify(this.getQuery().owner);
-    console.log("Key: ", userKey);
     const resultKey = JSON.stringify(
       Object.assign({}, this.getQuery(), this.getOptions(), { collection })
     );
-    console.log("Value: ", resultKey);
 
     const cachedValue = await RedisClient.hget(userKey, resultKey);
-    console.log('Cached Value: ', cachedValue);
     if (cachedValue){
       const doc = JSON.parse(cachedValue);
-      console.log("Contains Cached Value")
       return Array.isArray(doc)
         ? doc.map(d => new this.model(d))
         : new this.model(doc);
     }
 
-    console.log("Does Not Contain Cached Value")
-
-    RedisClient.hset(userKey, resultKey, JSON.stringify(result), 'EX', 10);
+    RedisClient.hset(userKey, resultKey, JSON.stringify(result), 'EX', 100);
   }
   
   return result;
