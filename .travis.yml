@@ -1,12 +1,12 @@
 language: node_js
 node_js:
-  - "12"
+  - "8"
 dist: trusty
 services:
   - mongodb
   - redis-server
 env:
-  - NODE_ENV=ci PORT=3000
+  - PORT=3000
 cache:
   directories:
     - node_modules
@@ -15,4 +15,3 @@ install:
 script:
     nohup npm run start &
     sleep 10
-    npm run test
