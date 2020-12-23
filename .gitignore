@@ -3,3 +3,4 @@ dist
 config
 .env
 dump.rdb
+nohup.out

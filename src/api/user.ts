@@ -45,6 +45,7 @@ class UserController implements Controller {
   createUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const { user, token } = await this.userService.createUser(request.body);
+      // TODO - rename this function to createUserAndGenerateToken?
       response.status(201).send({ user, token });
     } catch (error) {
       next(error);
