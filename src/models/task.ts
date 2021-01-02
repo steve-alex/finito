@@ -1,6 +1,16 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, Document } from 'mongoose';
 
-const TaskSchema = new mongoose.Schema({
+export interface ITask extends Document {
+  _id: mongoose.ObjectId,
+  header: string,
+  description: string,
+  date: Date,
+  completed: boolean,
+  owner: mongoose.ObjectId,
+  project: mongoose.ObjectId,
+}
+
+const TaskSchema = new Schema({
   header: {
     type: String,
     trim: true
@@ -29,6 +39,6 @@ const TaskSchema = new mongoose.Schema({
   timestamps: true
 })
 
-const Task = mongoose.model('Task', TaskSchema);
+const Task = mongoose.model<ITask>('Task', TaskSchema);
 
 export default Task;

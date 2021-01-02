@@ -1,6 +1,6 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import User from '../models/user';
+import { Router, Response, NextFunction } from 'express';
 import Controller from '../interface/Controller.interface';
+import User, { IUser } from '../models/user';
 import auth from '../middleware/auth';
 import RequestDTO from '../interface/RequestDTO.interface';
 import { userService } from '../services/services';
@@ -44,7 +44,6 @@ class UserController implements Controller {
   createUser = async (request: RequestDTO, response: Response, next: NextFunction) => {
     try {
       const { user, token } = await userService.createUser(request.body);
-      // TODO - rename this function to createUserAndGenerateToken?
       response.status(201).send({ user, token });
     } catch (error) {
       next(error);
@@ -78,8 +77,7 @@ class UserController implements Controller {
   }
 
   getNavigationItems = async (request: RequestDTO, response: Response, next: NextFunction) => {
-    const user = request.user;
-    console.log("User: ", user);
+    const user: IUser = request.user;
 
     try {
       const navigationItems = await userService.getNavigationItems(user);

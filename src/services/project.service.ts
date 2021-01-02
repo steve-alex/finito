@@ -1,11 +1,8 @@
-import Project from "../models/project";
+import Project, { IProject } from "../models/project";
 import HttpException from "../exceptions/error";
 
 class ProjectService {
-  constructor(){
-  }
-
-  public createProject = async (projectDetails: any, userId: string) =>  {
+  public createProject = async (projectDetails: IProject, userId: string) =>  {
     const project = new Project({
       ...projectDetails,
       owner: userId
@@ -26,7 +23,7 @@ class ProjectService {
     return project;
   }
 
-  public updateProject = async (updatedProject: any, projectId: string, userId: string) => {
+  public updateProject = async (updatedProject: IProject, projectId: string, userId: string) => {
     const updates = Object.keys(updatedProject);
     const allowedUpdates = ['name', 'area'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));

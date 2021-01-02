@@ -1,17 +1,24 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, Document } from 'mongoose';
 
-const ProjectSchema = new mongoose.Schema({
+export interface IProject extends Document {
+  _id: mongoose.ObjectId,
+  name: string,
+  owner: mongoose.ObjectId,
+  area: mongoose.ObjectId,
+}
+
+const ProjectSchema = new Schema({
   name: {
     type: String,
     trim: true
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     required: true,
     ref: 'User'
   },
   area: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Area'
   }
 })
@@ -22,6 +29,6 @@ ProjectSchema.virtual('tasks', {
   foreignField: 'project'
 })
 
-const Project = mongoose.model('Project', ProjectSchema);
+const Project = mongoose.model<IProject>('Project', ProjectSchema);
 
 export default Project

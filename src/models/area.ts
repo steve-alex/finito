@@ -1,13 +1,19 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, Document } from 'mongoose';
 
-const AreaSchema = new mongoose.Schema({
+export interface IArea extends Document {
+  _id: mongoose.ObjectId,
+  name: string,
+  owner: mongoose.ObjectId,
+}
+
+const AreaSchema = new Schema({
   name: {
     type: String,
     trim: true,
     required: true
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     required: true,
     ref: 'User'
   }
@@ -19,6 +25,6 @@ AreaSchema.virtual('projects', {
   foreignField: 'area'
 })
 
-const Area = mongoose.model('Area', AreaSchema);
+const Area = mongoose.model<IArea>('Area', AreaSchema);
 
 export default Area;

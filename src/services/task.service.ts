@@ -1,20 +1,25 @@
-import Task from '../models/task';
 import HttpException from '../exceptions/error';
 import { clearCache }  from './cache.service';
+import Task, { ITask } from '../models/task';
+import { IUser } from '../models/user';
+import { Request } from 'express';
 
 class TaskService {
   public redisClient;
+
   constructor(RedisClient: any){
     this.redisClient = RedisClient;
   }
 
-  public createTask = async (updatedTask, userId: string) => {
+  public createTask = async (updatedTask: ITask, userId: string) => {
     const task = new Task({
       ...updatedTask,
       owner: userId
     })
 
-    await task.save().then(() => clearCache(userId))
+    await task.save();
+    
+    clearCache(userId)
 
     return task;
   }
@@ -29,7 +34,7 @@ class TaskService {
     return task;
   }
 
-  public getTasks = async (user: any, query: any) => {
+  public getTasks = async (user: IUser, query: any) => {
     const match = this.getMatchObject(query);
     const options = this.getOptionsObject(query);
     const sort = this.getSortObject(query);
@@ -45,7 +50,7 @@ class TaskService {
     return tasks;
   }
 
-  public updateTask = async (updatedTask: any, taskId: string, userId: string) => {
+  public updateTask = async (updatedTask: ITask, taskId: string, userId: string) => {
     const updates = Object.keys(updatedTask);
     const allowedUpdates = ['header', 'description', 'date', 'completed', 'project'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
@@ -53,9 +58,6 @@ class TaskService {
     if (!isValidOperation){
       throw new HttpException(405, "Invalid Updates");
     }
-
-    console.log('taskId: ', taskId);
-    console.log('userId: ', userId);
     
     const task = await Task.findOne({ _id: taskId })
 

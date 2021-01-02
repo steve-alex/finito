@@ -1,15 +1,13 @@
-import Area from "../models/area";
+import Area, { IArea } from "../models/area";
 import HttpException from "../exceptions/error";
 
 class AreaService {
-  constructor(){
-  }
-
   public createArea = async (name: string, userId: string) =>  {
     const area = new Area({
       name: name,
       owner: userId
     })
+
     await area.save();
 
     return area;
@@ -25,7 +23,7 @@ class AreaService {
     return area;
   }
 
-  public updateArea = async (updatedArea: any, areaId: string, userId: string) => {
+  public updateArea = async (updatedArea: IArea, areaId: string, userId: string) => {
     const updates = Object.keys(updatedArea);
     const allowedUpdates = ['name'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
@@ -34,7 +32,7 @@ class AreaService {
       throw new HttpException(405, "Invalid updates");
     }
   
-    const area = await Area.findOne({ _id: areaId, owner: userId });
+    const area  = await Area.findOne({ _id: areaId, owner: userId });
 
     if (!area){
       throw new HttpException(404, 'Unable to find area');

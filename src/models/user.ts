@@ -1,10 +1,19 @@
 import { NextFunction } from "connect";
-const mongoose = require('mongoose');
+import mongoose, { Schema, Document } from 'mongoose';
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const Task = require("../models/task");
 
-const userSchema = new mongoose.Schema({
+export interface IUser extends Document {
+  _id: mongoose.ObjectId,
+  name: string,
+  email: string,
+  age: number,
+  password: string,
+  tokens: string[]
+}
+
+const userSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -98,6 +107,6 @@ userSchema.pre('remove', async function(next: NextFunction) {
   next();
 });
 
-const User = mongoose.model('User', userSchema); 
+const User = mongoose.model<IUser>('User', userSchema); 
 
 export default User;
