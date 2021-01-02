@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction} from 'express';
+import { Router, Response, NextFunction} from 'express';
 import Controller from '../interface/Controller.interface';
 import auth from '../middleware/auth';
 import RequestDTO from '../interface/RequestDTO.interface';

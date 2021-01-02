@@ -49,8 +49,6 @@ class ProjectController implements Controller {
     const projectId = request.params.id;
     const userId = request.user._id;
 
-    console.log('Updated Project: ', updatedProject);
-
     try {
       const project = await projectService.updateProject(updatedProject, projectId, userId);
       response.status(200).send(project);

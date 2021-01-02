@@ -12,7 +12,6 @@ class HttpException extends Error {
     this.name = name;
 
     Error.captureStackTrace(this)
-    //TODO - test this out across the application
   };
 
 }
