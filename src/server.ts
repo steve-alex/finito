@@ -1,5 +1,3 @@
-import App from './app';
-require('dotenv').config();
+import app from './app';
 
-const app = new App(parseInt(process.env.PORT || '5000'))
 app.listen();

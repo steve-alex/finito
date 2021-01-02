@@ -40,12 +40,10 @@ class App {
     this.app.use(express.json());
     this.app.use(loggerMiddleWare);
     this.app.use(errorMiddleware);
-    // TODO - Do the overwrite of exec function here?
     this.app.use(cors())
   }
 
   private initializeControllers(){
-    //TODO - Dependancy injection?!
     this.app.use(new UserController().router);
     this.app.use(new TaskController().router);
     this.app.use(new AreaController().router);
@@ -53,4 +51,6 @@ class App {
   }
 }
 
-export default App;
+const app = new App(parseInt(process.env.PORT || '5000'))
+
+export default app;
