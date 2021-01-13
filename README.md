@@ -1,9 +1,9 @@
 Finito-api is an api for a task management application.
-This project was built to answer all the questions I had about building a stable, production-ready API. Along the way, I got to explore lots of new technology and learn some lessons.
+This project was built to answer all the questions I had about building a stable, production-ready API. Along the way, I got to explore lots of new technology and learn some important lessons.
 
 
 
-Heavily inspired by the following resources -
+I couldn't have done it myself and was heavily inspired by the following resources -
 1. https://12factor.net/
 2. https://github.com/goldbergyoni/nodebestpractices
 3. https://www.google.com/
